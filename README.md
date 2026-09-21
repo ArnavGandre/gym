@@ -14,9 +14,15 @@ Static frontend (GitHub Pages) + optional Postgres sync (Vercel).
 
 ## Frontend — GitHub Pages
 
-No build step. Push, then **Settings → Pages → Source: GitHub Actions**.
-The workflow in `.github/workflows/pages.yml` deploys the repo root on every push
-to `main` or `claude/hopeful-babbage-k5j8xo`.
+No build step. One manual step is required once, because the Actions token is not
+allowed to create a Pages site (`Resource not accessible by integration`):
+
+1. **Settings → Pages → Source: GitHub Actions**
+2. **Actions → Deploy to GitHub Pages → Run workflow**
+
+After that, `.github/workflows/pages.yml` redeploys the repo root on every push
+to `main` or `claude/hopeful-babbage-k5j8xo`. The site lands at
+`https://<user>.github.io/gym/`.
 
 Locally: `python3 -m http.server 8080` and open `http://localhost:8080`
 (it's ES modules, so it needs a server, not `file://`).
