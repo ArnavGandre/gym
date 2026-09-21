@@ -1,0 +1,65 @@
+name: Deploy API to Vercel
+
+# Runs the Vercel CLI for you, so no local machine is needed.
+# Required secret:  VERCEL_TOKEN   (vercel.com/account/tokens)
+# Optional secrets: DATABASE_URL, SYNC_TOKEN, ALLOW_ORIGIN
+#   — when present they are pushed into the Vercel project's production env.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, claude/hopeful-babbage-k5j8xo]
+    paths: ['api/**', 'package.json', 'vercel.json', '.github/workflows/deploy-api.yml']
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for token
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::error::VERCEL_TOKEN secret is not set. Add it under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+
+      - run: npm i -g vercel@latest
+
+      - name: Link (creates the Vercel project on first run)
+        run: vercel link --yes --project gym --token="$VERCEL_TOKEN"
+
+      - name: Push env vars into Vercel
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SYNC_TOKEN: ${{ secrets.SYNC_TOKEN }}
+          ALLOW_ORIGIN: ${{ secrets.ALLOW_ORIGIN }}
+        run: |
+          set -u
+          put () {
+            [ -z "${2:-}" ] && { echo "· $1 not set, skipping"; return 0; }
+            printf '%s' "$2" | vercel env add "$1" production --force --token="$VERCEL_TOKEN" >/dev/null
+            echo "· $1 set"
+          }
+          put DATABASE_URL "$DATABASE_URL"
+          put SYNC_TOKEN   "$SYNC_TOKEN"
+          put ALLOW_ORIGIN "$ALLOW_ORIGIN"
+
+      - name: Deploy
+        run: |
+          url=$(vercel deploy --prod --yes --token="$VERCEL_TOKEN")
+          echo "$url"
+          {
+            echo "### API deployed"
+            echo ""
+            echo "Sync endpoint — paste this into the app's **Sync** button:"
+            echo ""
+            echo '```'
+            echo "$url/api/data"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
