@@ -1,4 +1,5 @@
 import { PROGRAM, DAYS, DAY_LABEL, START_WEIGHT } from "./data.js";
+import { demoFor } from "./demos.js";
 
 /* ── state ───────────────────────────────────────────── */
 const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
@@ -56,21 +57,27 @@ function renderList(){
     const arr = r.done[i] || [];
     const full = arr.filter(Boolean).length >= x.sets;
     const rest = x.cardio ? null : (x.heavy ? "90–120s" : "45–60s");
+    const dm = demoFor(x.n);
     return `<div class="card ex${full?" done":""}" data-i="${i}" style="animation-delay:${i*38}ms">
-      <div class="meta">
-        <span class="nm">${x.n}</span>
-        <span class="sub">
-          <span class="n">${x.sets===1?"":x.sets+" × "}${x.reps}</span>
-          ${x.note?`<span>· ${x.note}</span>`:""}
-          ${rest?`<span class="tag">· ${rest}</span>`:""}
-        </span>
+      <div class="top">
+        <button class="meta" data-open="${i}" aria-expanded="false"
+          aria-label="Show how to do ${x.n}">
+          <span class="nm">${x.n}</span>
+          <span class="sub">
+            <span class="n">${x.sets===1?"":x.sets+" × "}${x.reps}</span>
+            ${x.note?`<span>· ${x.note}</span>`:""}
+            ${rest?`<span class="tag">· ${rest}</span>`:""}
+            ${dm?`<span class="chev" aria-hidden="true">▾</span>`:""}
+          </span>
+        </button>
+        <div class="sets">${Array.from({length:x.sets},(_,k)=>
+          `<button class="set${arr[k]?" on":""}" data-i="${i}" data-k="${k}"
+            aria-label="${x.n} set ${k+1}" aria-pressed="${!!arr[k]}">
+            <span class="ripple"></span>
+            <svg viewBox="0 0 24 24"><path d="M5 13l4.5 4.5L19 7"/></svg></button>`).join("")}
+        </div>
       </div>
-      <div class="sets">${Array.from({length:x.sets},(_,k)=>
-        `<button class="set${arr[k]?" on":""}" data-i="${i}" data-k="${k}"
-          aria-label="${x.n} set ${k+1}" aria-pressed="${!!arr[k]}">
-          <span class="ripple"></span>
-          <svg viewBox="0 0 24 24"><path d="M5 13l4.5 4.5L19 7"/></svg></button>`).join("")}
-      </div>
+      <div class="detail" id="d${i}" hidden></div>
     </div>`;
   }).join("");
 }
@@ -163,6 +170,46 @@ const render = () => { renderRail(); renderList(); renderStats(); renderWeight()
 el.rail.addEventListener("click", e => {
   const b = e.target.closest(".day"); if(!b) return;
   sel = b.dataset.d; render();
+});
+
+function detailHTML(x){
+  const dm = demoFor(x.n);
+  if(!dm) return "";
+  const q = encodeURIComponent(`how to ${x.n} proper form`);
+  return `
+    <div class="demo">
+      <img src="${dm.frames[0]}" alt="${x.n}, start position" loading="lazy" decoding="async">
+      <img src="${dm.frames[1]}" alt="${x.n}, end position" loading="lazy" decoding="async">
+    </div>
+    <div class="chips">
+      ${dm.muscles?`<span class="chip">${dm.muscles}</span>`:""}
+      ${dm.equipment?`<span class="chip">${dm.equipment}</span>`:""}
+    </div>
+    <ol class="cues">${dm.cues.map(c => `<li>${c}</li>`).join("")}</ol>
+    <a class="yt" href="https://www.youtube.com/results?search_query=${q}" target="_blank" rel="noopener">
+      Watch a video ↗
+    </a>`;
+}
+
+el.list.addEventListener("click", e => {
+  const b = e.target.closest(".meta"); if(!b) return;
+  const i = +b.dataset.open, card = b.closest(".ex"), d = card.querySelector(".detail");
+  const open = card.classList.contains("open");
+
+  el.list.querySelectorAll(".ex.open").forEach(c => {          // one at a time
+    c.classList.remove("open");
+    c.querySelector(".meta").setAttribute("aria-expanded", "false");
+    const dd = c.querySelector(".detail");
+    dd.style.maxHeight = ""; setTimeout(() => { if(!c.classList.contains("open")) dd.hidden = true; }, 420);
+  });
+  if(open) return;
+
+  if(!d.innerHTML) d.innerHTML = detailHTML(plan(sel).items[i]);
+  if(!d.innerHTML) return;                                      // no demo for this one
+  d.hidden = false;
+  card.classList.add("open");
+  b.setAttribute("aria-expanded", "true");
+  requestAnimationFrame(() => { d.style.maxHeight = d.scrollHeight + "px"; });
 });
 
 el.list.addEventListener("click", e => {

@@ -63,6 +63,21 @@ Import the repo at [vercel.com/new](https://vercel.com/new) and set
 Data is stored in one row as JSONB (`schema.sql`). Writes use last-write-wins on
 a timestamp, so the newest device wins.
 
+## Exercise demos
+
+Tapping an exercise expands a panel with a looping demo of the movement, the
+muscles worked, three form cues and a link to video search.
+
+The frames come from the public-domain
+[free-exercise-db](https://github.com/yuhonas/free-exercise-db) — each exercise
+ships a start and an end photo, and the panel cross-fades between them, which
+reads as the movement. They are vendored into `demos/` (1.3 MB total, grayscaled
+in CSS) so the app makes no third-party requests and works offline.
+
+To add or swap one: drop `demos/<slug>-0.jpg` and `-1.jpg` in place and add the
+matching entry to `demos.js`, where `<slug>` is the exercise name lowercased with
+non-alphanumerics turned into dashes.
+
 ## Editing the program
 
 `data.js` — one object per weekday. `heavy: true` gives the 90–120s rest,
