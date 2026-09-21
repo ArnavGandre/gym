@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Iron Log</title>
+<meta name="description" content="Minimal personal gym tracker.">
+<meta name="theme-color" content="#050506">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23050506'/><rect x='7' y='14' width='18' height='4' rx='2' fill='%23ff3d7f'/><rect x='5' y='10' width='3' height='12' rx='1.5' fill='%23d8dae2'/><rect x='24' y='10' width='3' height='12' rx='1.5' fill='%23d8dae2'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <span class="mark">Iron Log</span>
+      <h1>Train<em>.</em></h1>
+    </div>
+    <div class="today" id="todayBox"></div>
+  </header>
+
+  <nav class="rail" id="rail" aria-label="Day of week"></nav>
+
+  <section class="stats">
+    <div class="card stat hero">
+      <div class="ring" id="ring" role="img" aria-label="Today's completion"></div>
+      <div class="col">
+        <span class="lbl">Today</span>
+        <span class="v" id="sDone">0<s>/0 sets</s></span>
+      </div>
+    </div>
+    <div class="card stat">
+      <span class="lbl">Streak</span>
+      <span class="v" id="sStreak">0<s>d</s></span>
+    </div>
+    <div class="card stat">
+      <span class="lbl">Sessions</span>
+      <span class="v" id="sTotal">0</span>
+    </div>
+  </section>
+
+  <section class="card weight">
+    <div class="wrow">
+      <span class="lbl">Weight</span>
+    </div>
+    <div class="wrow">
+      <label class="wfield">
+        <input id="wt" type="number" inputmode="decimal" step="0.1" min="20" max="250" placeholder="62" aria-label="Today's weight in kilograms">
+        <span class="unit">KG</span>
+      </label>
+      <span class="delta" id="wDelta"></span>
+    </div>
+    <svg id="spark" viewBox="0 0 300 42" preserveAspectRatio="none" aria-hidden="true"></svg>
+  </section>
+
+  <section>
+    <div class="head">
+      <h2 id="dayName">Push</h2>
+      <span class="pct" id="dayPct"></span>
+    </div>
+    <div class="list" id="list"></div>
+  </section>
+
+  <footer>
+    <span class="note"><span class="dotstate" id="syncDot"></span><span id="syncTxt">Local only</span></span>
+    <div class="actions">
+      <button class="btn" id="bSync">Sync</button>
+      <button class="btn" id="bExport">Export</button>
+      <button class="btn warn" id="bReset">Clear day</button>
+    </div>
+  </footer>
+
+  <p class="note" style="margin-top:14px;line-height:1.9;color:var(--ink-3)">
+    Rest — 90–120s big lifts · 45–60s isolation · warm up 5 min + 2 light sets
+  </p>
+</div>
+
+<div class="timer" id="timer" role="status" aria-live="off">
+  <div style="display:flex;flex-direction:column;gap:3px">
+    <span class="cap">Rest</span>
+    <span class="t" id="tVal">1:30</span>
+  </div>
+  <button id="tAdd" title="+30s" aria-label="Add 30 seconds">+</button>
+  <button id="tStop" title="Skip" aria-label="Skip rest">×</button>
+  <span class="bar"><i id="tBar"></i></span>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

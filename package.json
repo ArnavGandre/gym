@@ -1,0 +1,9 @@
+{
+  "name": "iron-log",
+  "private": true,
+  "type": "module",
+  "description": "Minimal personal gym tracker — static frontend + optional Postgres sync.",
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4"
+  }
+}
