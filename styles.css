@@ -271,4 +271,116 @@ footer{margin-top:26px;display:flex;align-items:center;justify-content:space-bet
   *{animation-duration:.01ms!important;transition-duration:.01ms!important}
 }
 
-@property --p{syntax:'<number>';inherits:false;initial-value:0}
+@property --p{syntax:'<number>';inherits:true;initial-value:0}
+
+/* ── view toggle ──────────────────────────────────────── */
+.seg{display:flex;gap:4px;padding:3px;margin:0 0 18px;border:1px solid var(--line);border-radius:999px;width:fit-content;background:var(--panel)}
+.seg button{
+  background:none;border:none;color:var(--ink-3);border-radius:999px;padding:8px 18px;cursor:pointer;
+  font:500 9.5px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;
+  transition:color .3s var(--ease),background .35s var(--ease),box-shadow .35s var(--ease);
+}
+.seg button:hover{color:var(--ink-2)}
+.seg button.on{
+  color:var(--ink);background:rgba(255,255,255,.07);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 18px rgba(200,206,226,.08);
+}
+
+/* ── month ────────────────────────────────────────────── */
+.mnav{display:flex;align-items:center;justify-content:space-between;margin:0 2px 14px}
+.mnav span{font-size:19px;font-weight:300;letter-spacing:-.03em}
+.mnav button{
+  background:none;border:1px solid var(--line);color:var(--ink-2);border-radius:50%;
+  width:32px;height:32px;cursor:pointer;font-size:15px;line-height:1;
+  transition:color .3s,border-color .3s,box-shadow .35s,transform .2s var(--ease);
+}
+.mnav button:hover{color:var(--silver);border-color:var(--line-2);box-shadow:var(--glow-silver)}
+.mnav button:active{transform:scale(.9)}
+
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;padding:14px 12px}
+.gh{
+  text-align:center;padding-bottom:6px;
+  font:500 9px/1 var(--mono);letter-spacing:.12em;color:var(--ink-3);
+}
+.cell{
+  position:relative;aspect-ratio:1;border:none;background:none;cursor:pointer;padding:0;
+  display:grid;place-items:center;border-radius:50%;color:var(--ink-3);
+  font:400 12.5px/1 "Inter",sans-serif;font-variant-numeric:tabular-nums;
+  transition:color .3s var(--ease),transform .25s var(--ease);
+  animation:cellIn .4s var(--ease) both;
+}
+@keyframes cellIn{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:none}}
+.cell.blank{pointer-events:none;animation:none}
+.cell span{position:relative;z-index:1}
+.cell::before,.cell::after{
+  content:"";position:absolute;border-radius:50%;opacity:0;
+  transition:opacity .35s var(--ease);
+}
+.cell::before{
+  inset:0;
+  background:conic-gradient(from -90deg,var(--pink) calc(var(--p,0)*1%),rgba(255,255,255,.1) 0);
+}
+.cell::after{inset:3.5px;background:var(--bg)}
+.cell.some::before,.cell.full::before,
+.cell.some::after,.cell.full::after{opacity:1}
+.cell.some,.cell.full{color:var(--ink)}
+.cell.full::before{filter:drop-shadow(0 0 9px rgba(255,61,127,.45))}
+.cell.rest{color:var(--ink-3);opacity:.4}
+.cell.today{color:var(--silver);text-shadow:var(--glow-silver);font-weight:500}
+.cell.today:not(.some):not(.full){box-shadow:inset 0 0 0 1px rgba(216,218,226,.22)}
+.cell.sel{box-shadow:0 0 0 1px var(--pink-dim)}
+.cell:hover{color:var(--ink);transform:scale(1.08)}
+.cell:active{transform:scale(.92)}
+
+.mstats{grid-template-columns:repeat(4,1fr);margin:12px 0 14px}
+.mstats .v{font-size:22px}
+.mstats .v .sm{font-size:12px;letter-spacing:-.01em;color:var(--silver);text-shadow:var(--glow-silver)}
+.key{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.key .k{width:7px;height:7px;border-radius:50%;display:inline-block;margin-left:6px}
+.key .k:first-child{margin-left:0}
+.k.full{background:var(--pink);box-shadow:var(--glow-pink)}
+.k.some{background:linear-gradient(90deg,var(--pink) 50%,rgba(255,255,255,.1) 50%)}
+.k.rest{background:rgba(255,255,255,.12)}
+
+/* ── sync sheet ───────────────────────────────────────── */
+.sheet{
+  position:fixed;inset:0;z-index:80;display:grid;place-items:end center;
+  background:rgba(2,2,3,.72);backdrop-filter:blur(6px);
+  opacity:0;pointer-events:none;transition:opacity .35s var(--ease);
+}
+.sheet.show{opacity:1;pointer-events:auto}
+.sheet .panel{
+  width:min(560px,100%);margin:0 auto;padding:20px 20px calc(22px + env(safe-area-inset-bottom));
+  background:#0a0a0c;border:1px solid var(--line-2);border-radius:20px 20px 0 0;
+  transform:translateY(16px);transition:transform .45s var(--ease);
+}
+.sheet.show .panel{transform:none}
+@media (min-width:560px){
+  .sheet{place-items:center}
+  .sheet .panel{border-radius:18px}
+}
+.shead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.shead button{background:none;border:none;color:var(--ink-3);font-size:20px;cursor:pointer;line-height:1;padding:2px 4px}
+.shead button:hover{color:var(--pink)}
+.shstate{font-size:12.5px;color:var(--ink-2);margin-bottom:14px}
+.tabs{display:flex;gap:4px;padding:3px;border:1px solid var(--line);border-radius:999px;margin-bottom:14px}
+.tabs button{
+  flex:1;background:none;border:none;color:var(--ink-3);border-radius:999px;padding:9px 6px;cursor:pointer;
+  font:500 9px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;transition:color .3s,background .3s;
+}
+.tabs button.on{color:var(--ink);background:rgba(255,255,255,.07)}
+.shhelp{font-size:12.5px;line-height:1.6;color:var(--ink-3);margin-bottom:11px}
+.shhelp a{color:var(--silver);text-shadow:var(--glow-silver)}
+.shhelp b{color:var(--ink-2);font-weight:500}
+.shhelp code{font:500 11px var(--mono);color:var(--ink-2)}
+.sheet input{
+  width:100%;margin-bottom:9px;padding:12px 13px;border-radius:10px;
+  background:rgba(255,255,255,.035);border:1px solid var(--line);color:var(--ink);
+  font:400 13px/1 var(--mono);outline:none;transition:border-color .3s;
+}
+.sheet input:focus{border-color:var(--pink)}
+.btn.go{width:100%;padding:12px;color:var(--ink);border-color:var(--line-2)}
+.btn.go:hover{color:var(--pink);border-color:var(--pink-dim);box-shadow:var(--glow-pink)}
+.shmsg{font:500 10px/1.6 var(--mono);letter-spacing:.1em;color:var(--silver);margin:11px 0 0;min-height:1.6em;word-break:break-word}
+#bDisconnect{width:100%;margin-top:10px}
+@media (max-width:460px){ .mstats{grid-template-columns:repeat(2,1fr)} }

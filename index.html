@@ -23,6 +23,12 @@
     <div class="today" id="todayBox"></div>
   </header>
 
+  <div class="seg" role="tablist" aria-label="View">
+    <button class="on" data-view="week" role="tab">Week</button>
+    <button data-view="month" role="tab">Month</button>
+  </div>
+
+  <div id="weekView">
   <nav class="rail" id="rail" aria-label="Day of week"></nav>
 
   <section class="stats">
@@ -64,6 +70,22 @@
     </div>
     <div class="list" id="list"></div>
   </section>
+  </div>
+
+  <section id="monthView" hidden>
+    <div class="mnav">
+      <button id="mPrev" aria-label="Previous month">‹</button>
+      <span id="mLabel"></span>
+      <button id="mNext" aria-label="Next month">›</button>
+    </div>
+    <div class="card grid" id="grid"></div>
+    <div class="stats mstats" id="mStats"></div>
+    <p class="note key">
+      <i class="k full"></i> complete
+      <i class="k some"></i> partial
+      <i class="k rest"></i> rest day
+    </p>
+  </section>
 
   <footer>
     <span class="note"><span class="dotstate" id="syncDot"></span><span id="syncTxt">Local only</span></span>
@@ -87,6 +109,41 @@
   <button id="tAdd" title="+30s" aria-label="Add 30 seconds">+</button>
   <button id="tStop" title="Skip" aria-label="Skip rest">×</button>
   <span class="bar"><i id="tBar"></i></span>
+</div>
+
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Sync across devices">
+  <div class="panel">
+    <div class="shead">
+      <span class="lbl">Sync across devices</span>
+      <button id="shClose" aria-label="Close">×</button>
+    </div>
+    <p class="shstate" id="shState"></p>
+
+    <div class="tabs">
+      <button data-tab="gist" class="on">GitHub Gist</button>
+      <button data-tab="api">Custom endpoint</button>
+    </div>
+
+    <div data-pane="gist">
+      <p class="shhelp">
+        No server needed. Create a token with <b>Gists: read and write</b> at
+        <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/tokens</a>,
+        then paste the same token on every device.
+      </p>
+      <input id="shGistToken" type="password" placeholder="github_pat_…" autocomplete="off" spellcheck="false">
+      <button class="btn go" id="bConnectGist">Connect</button>
+    </div>
+
+    <div data-pane="api" hidden>
+      <p class="shhelp">The Vercel endpoint from <code>api/data.js</code>.</p>
+      <input id="shUrl" type="url" placeholder="https://your-app.vercel.app/api/data" autocomplete="off" spellcheck="false">
+      <input id="shApiToken" type="password" placeholder="SYNC_TOKEN" autocomplete="off" spellcheck="false">
+      <button class="btn go" id="bConnectApi">Connect</button>
+    </div>
+
+    <p class="shmsg" id="shMsg"></p>
+    <button class="btn warn" id="bDisconnect" hidden>Disconnect this device</button>
+  </div>
 </div>
 
 <div id="toast" role="status" aria-live="polite"></div>

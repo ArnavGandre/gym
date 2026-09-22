@@ -26,42 +26,42 @@ for you — that API needs repo-admin rights.
 Locally: `python3 -m http.server 8080` and open `http://localhost:8080`
 (it's ES modules, so it needs a server, not `file://`).
 
-## Backend — optional cloud sync
+## Sync across devices
 
-Only needed if you want the same log on phone and laptop. Skip it and the app
-still works fully, local-only.
+`localStorage` is per-browser, so without sync each device keeps its own log.
+Tap **Sync** in the app to connect one; both options merge **per day on a
+per-day timestamp**, so connecting a fresh device never wipes the history
+already on another one. Devices re-sync on load, on tab focus and on regaining
+network — no button to remember.
 
-### Phone-only route (no laptop)
+### GitHub Gist (no server)
 
-`.github/workflows/deploy-api.yml` runs the Vercel CLI in CI, so nothing has to
-be installed anywhere.
+Create a fine-grained token with **Gists: read and write** at
+[github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new),
+then paste the same token on every device. The app finds or creates a secret
+Gist called `ironlog-sync` and keeps the log in it.
 
-1. Create a Postgres database at [neon.tech](https://neon.tech) and copy the
-   connection string. The table creates itself on first request.
-2. Create a Vercel token at [vercel.com/account/tokens](https://vercel.com/account/tokens).
-3. In **Settings → Secrets and variables → Actions**, add:
+The token is held in that browser's `localStorage` and sent only to
+`api.github.com`. Scope it to Gists alone so it can do nothing else, and revoke
+it from the same page if a device is lost.
 
-   | Secret | Value |
-   |---|---|
-   | `VERCEL_TOKEN` | the Vercel token |
-   | `DATABASE_URL` | the Neon connection string |
-   | `SYNC_TOKEN` | any long random string — your password |
-   | `ALLOW_ORIGIN` | `https://arnavgandre.github.io` |
+### Custom endpoint (Vercel + Postgres)
 
-4. **Actions → Deploy API to Vercel → Run workflow.** The run summary prints
-   the endpoint URL.
-5. In the app, tap **Sync**, paste that URL and the `SYNC_TOKEN`.
+`api/data.js` in this repo, deployed to Vercel. Set `DATABASE_URL`, `SYNC_TOKEN`
+and `ALLOW_ORIGIN` in its env vars, then paste the endpoint URL and token into
+the app's **Custom endpoint** tab. `.github/workflows/deploy-api.yml` can run
+the deploy from CI so no local machine is needed — see the secrets table there.
 
-The workflow creates the Vercel project on its first run and redeploys whenever
-`api/`, `package.json` or `vercel.json` changes.
+Data is stored as one JSONB row (`schema.sql`); the table creates itself.
 
-### Or straight from vercel.com
+## Views
 
-Import the repo at [vercel.com/new](https://vercel.com/new) and set
-`DATABASE_URL`, `SYNC_TOKEN` and `ALLOW_ORIGIN` in the project's env vars.
+**Week** — the day rail, today's workout, per-set ticks and the weight input.
 
-Data is stored in one row as JSONB (`schema.sql`). Writes use last-write-wins on
-a timestamp, so the newest device wins.
+**Month** — a calendar where each day draws a ring of how much of that day's
+workout you finished: a pink arc for partial, a full glowing ring for complete,
+dimmed for rest days. Below it, days trained, days completed, total sets and the
+weight range for the month. Tap any day to open it.
 
 ## Exercise demos
 
