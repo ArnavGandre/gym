@@ -320,7 +320,8 @@ el.wt.addEventListener("input", () => {
 
 $("#bReset").addEventListener("click", () => {
   if(!confirm(`Clear all ticks for ${sel}?`)) return;
-  rec(sel).done = {}; touch(sel); save(); render(); toast("Day cleared");
+  const r = rec(sel); r.done = {}; r.clr = Date.now(); touch(sel);
+  save(); render(); toast("Day cleared");
 });
 
 $("#bExport").addEventListener("click", () => {
@@ -391,11 +392,38 @@ function burst(){
 const GIST_DESC = "ironlog-sync";
 const GIST_FILE = "ironlog.json";
 
+// A completed set is never dropped: ticks are unioned rather than letting one
+// side's copy of the day win outright. That matters because records written
+// before per-day timestamps existed carry ts 0 and would lose every contest.
+// Only "Clear day" removes ticks, and it stamps clr so it can beat the other
+// side's earlier edits.
+function mergeDay(a, b){
+  const at = a.ts || 0, bt = b.ts || 0;
+  const ac = a.clr || 0, bc = b.clr || 0;
+  const wipe = ac > bt ? a : bc > at ? b : null;
+
+  let done;
+  if(wipe) done = { ...(wipe.done || {}) };
+  else {
+    done = {};
+    for(const k of new Set([...Object.keys(a.done || {}), ...Object.keys(b.done || {})])){
+      const x = (a.done || {})[k] || [], y = (b.done || {})[k] || [];
+      done[k] = Array.from({ length: Math.max(x.length, y.length) }, (_, i) => !!(x[i] || y[i]));
+    }
+  }
+  const newer = bt > at ? b : a, older = bt > at ? a : b;
+  return {
+    done,
+    weight: newer.weight ?? older.weight ?? null,
+    ts: Math.max(at, bt),
+    clr: Math.max(ac, bc)
+  };
+}
+
 function mergeState(a, b){
   const days = { ...(a.days || {}) };
   for(const [d, rb] of Object.entries(b.days || {})){
-    const ra = days[d];
-    if(!ra || (rb.ts || 0) > (ra.ts || 0)) days[d] = rb;
+    days[d] = days[d] ? mergeDay(days[d], rb) : rb;
   }
   return { days, updated: Math.max(a.updated || 0, b.updated || 0) };
 }
@@ -553,7 +581,6 @@ $("#bDisconnect").addEventListener("click", () => {
 });
 
 /* ── boot ────────────────────────────────────────────── */
-if(!weightSeries().length && rec(sel).weight == null){ rec(sel).weight = START_WEIGHT; touch(sel); save(); }
 render();
 setSync(cfg.mode ? "ok" : "", cfg.mode ? "Sync on" : "This device only");
 if(cfg.mode) syncNow();

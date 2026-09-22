@@ -29,10 +29,16 @@ Locally: `python3 -m http.server 8080` and open `http://localhost:8080`
 ## Sync across devices
 
 `localStorage` is per-browser, so without sync each device keeps its own log.
-Tap **Sync** in the app to connect one; both options merge **per day on a
-per-day timestamp**, so connecting a fresh device never wipes the history
-already on another one. Devices re-sync on load, on tab focus and on regaining
-network — no button to remember.
+Tap **Sync** in the app to connect one. Merging unions the ticks of each day, so
+a completed set is never dropped — not when a fresh device connects, and not
+when two devices log the same day before seeing each other. Only **Clear day**
+removes ticks: it stamps the day so the clear beats the other device's earlier
+edits. Devices re-sync on load, on tab focus and on regaining network — no
+button to remember.
+
+The trade-off: un-ticking a single set on one device won't propagate to the
+other, it comes back on the next merge. Losing a set you actually did is the
+worse failure, so ticks win ties. Use **Clear day** to wipe a day everywhere.
 
 ### GitHub Gist (no server)
 
